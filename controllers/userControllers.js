@@ -1,4 +1,5 @@
 import User from "../models/userModel.js";
+import JWT from "jsonwebtoken";
 
 export default {
   getUsers: async (req, res) => {
@@ -19,16 +20,21 @@ export default {
       email,
       password,
     });
+
     if (!user)
       return res
         .status(400)
         .json({ status: "Failed", message: "User not found!!!" });
 
+    // Generate token
+    const payload = { name, email };
+    const token = await JWT.sign(payload, process.env.SECRET_KEY);
+
     try {
       await user.save();
       return res
         .status(201)
-        .json({ status: "Success", message: "User created", data: user });
+        .json({ status: "Success", message: "User created", data: user, token });
     } catch (error) {
       console.log("Server Error", error);
       return res.status(400).json({ message: "User create failed" });
