@@ -15,8 +15,13 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Health Check
+app.get("/health-check", (req, res) => {
+  res.status(200).json({ status: "OK", message: "Your health is Fine." });
+});
+
 //Routes
-app.use("/ap/v1", userRoute);
+app.use("/api/v1", userRoute);
 
 //Unexpected error handling middleware
 app.use((err, req, res, next) => {
