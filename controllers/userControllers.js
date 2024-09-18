@@ -34,4 +34,25 @@ export default {
       return res.status(400).json({ message: "User create failed" });
     }
   },
+
+  userLogin: async (req, res) => {
+    const { email, password } = req.body;
+    try {
+      const user = await User.findOne({ email });
+      if (!user)
+        return res.status(400).json({ message: "User does not exists!" });
+
+      if (password === user.password)
+        return res
+          .status(200)
+          .json({ status: "success", message: "User logged in", data: user });
+
+      if (password !== user.password)
+        return res
+          .status(400)
+          .json({ status: "Failed", message: "Fail to logged in" });
+    } catch (error) {
+      console.log("User login failed!");
+    }
+  },
 };
