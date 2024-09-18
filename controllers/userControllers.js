@@ -25,7 +25,7 @@ export default {
         .json({ status: "Failed", message: "User not found!!!" });
 
     try {
-      await User.save();
+      await user.save();
       return res
         .status(201)
         .json({ status: "Success", message: "User created", data: user });
