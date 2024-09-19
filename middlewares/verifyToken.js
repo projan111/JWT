@@ -1,12 +1,12 @@
 import JWT from "jsonwebtoken";
-const secret_key = process.env.SECRET_KEY;
 
 // Middleware to verify the token
 export const verifyToken = (req, res, next) => {
-  const token = req.headers["authorization"];
+  const token =
+    req.headers["authorization"] && req.headers["authorization"].split(" ")[1];
   if (!token) return res.status(403).json({ message: "No token provided" });
 
-  JWT.verify(token, secret_key, (err, decoded) => {
+  JWT.verify(token, process.env.SECRET_KEY, (err, decoded) => {
     if (err)
       return res.status(500).json({ message: "Failed to authenticate token" });
 

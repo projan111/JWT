@@ -3,11 +3,9 @@ import User from "../models/userModel.js";
 import JWT from "jsonwebtoken";
 import bcryptjs from "bcryptjs";
 
-const secret_key = process.env.SECRET_KEY;
-
 export default {
   getUsers: async (req, res) => {
-    const users = await User.findOne({ email });
+    const users = await User.find({ });
     return res.json({
       status: "Success",
       message: "Welcome to the new world",
@@ -23,11 +21,14 @@ export default {
     // const token = await JWT.sign(payload, process.env.SECRET_KEY);
 
     try {
+      const salt = await bcryptjs.genSalt(10);
+      const hashedPassword = await bcryptjs.hash(password, salt);
+
       const user = new User({
         name,
         phone,
         email,
-        password,
+        password: hashedPassword,
         role,
       });
 
@@ -37,6 +38,13 @@ export default {
           .json({ status: "Failed", message: "User not found!!!" });
 
       await user.save();
+
+      // Create payload and generate token for JWT
+      const payload = { id: user._id, role: user.role };
+      const token = JWT.sign(payload, process.env.SECRET_KEY, {
+        expiresIn: "1h",
+      });
+
       return res.status(201).json({
         status: "Success",
         message: "User registered successfully!",
@@ -59,14 +67,17 @@ export default {
 
       // compare or match the password of user
       const isMatch = await bcryptjs.compare(password, user.password);
+
       if (!isMatch)
         return res.status(400).json({
           message: "Invalid username or password",
         });
 
-      // Generate JWT token
+      // Generate JWT token if login is successful
       const payload = { id: user._id, role: user.role };
-      const token = JWT.sign(payload, secret_key, { expiresIn: "1h" });
+      const token = JWT.sign(payload, process.env.SECRET_KEY, {
+        expiresIn: "1h",
+      });
 
       return res.json({ token });
     } catch (error) {
