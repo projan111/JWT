@@ -2,7 +2,7 @@ import JWT from "jsonwebtoken";
 const secret_key = process.env.SECRET_KEY;
 
 // Middleware to verify the token
-const verifyToken = (req, res, next) => {
+export const verifyToken = (req, res, next) => {
   const token = req.headers["authorization"];
   if (!token) return res.status(403).json({ message: "No token provided" });
 
@@ -16,11 +16,9 @@ const verifyToken = (req, res, next) => {
   });
 };
 
-const isAdmin = (req, res, next) => {
+export const isAdmin = (req, res, next) => {
   if (req.userRole !== "admin") {
     return res.status(403).json({ message: "Requires admin role" });
   }
   next();
 };
-
-module.exports = { verifyToken, isAdmin };
