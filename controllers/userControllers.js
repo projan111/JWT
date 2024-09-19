@@ -1,5 +1,9 @@
+import express from "express";
 import User from "../models/userModel.js";
 import JWT from "jsonwebtoken";
+import bcryptjs from "bcryptjs";
+
+const secret_key = process.env.SECRET_KEY;
 
 export default {
   getUsers: async (req, res) => {
@@ -12,29 +16,33 @@ export default {
   },
 
   registerUser: async (req, res) => {
-    const { name, phone, email, password } = req.body;
-
-    const user = new User({
-      name,
-      phone,
-      email,
-      password,
-    });
-
-    if (!user)
-      return res
-        .status(400)
-        .json({ status: "Failed", message: "User not found!!!" });
+    const { name, phone, email, password, role } = req.body;
 
     // Generate token
-    const payload = { name, email };
-    const token = await JWT.sign(payload, process.env.SECRET_KEY);
+    // const payload = { name, email };
+    // const token = await JWT.sign(payload, process.env.SECRET_KEY);
 
     try {
+      const user = new User({
+        name,
+        phone,
+        email,
+        password,
+        role,
+      });
+
+      if (!user)
+        return res
+          .status(400)
+          .json({ status: "Failed", message: "User not found!!!" });
+
       await user.save();
-      return res
-        .status(201)
-        .json({ status: "Success", message: "User created", data: user, token });
+      return res.status(201).json({
+        status: "Success",
+        message: "User registered successfully!",
+        data: user,
+        token,
+      });
     } catch (error) {
       console.log("Server Error", error);
       return res.status(400).json({ message: "User create failed" });
@@ -44,19 +52,23 @@ export default {
   userLogin: async (req, res) => {
     const { email, password } = req.body;
     try {
+      // Find the user by email
       const user = await User.findOne({ email });
       if (!user)
         return res.status(400).json({ message: "User does not exists!" });
 
-      if (password === user.password)
-        return res
-          .status(200)
-          .json({ status: "success", message: "User logged in", data: user });
+      // compare or match the password of user
+      const isMatch = await bcryptjs.compare(password, user.password);
+      if (!isMatch)
+        return res.status(400).json({
+          message: "Invalid username or password",
+        });
 
-      if (password !== user.password)
-        return res
-          .status(400)
-          .json({ status: "Failed", message: "Fail to logged in" });
+      // Generate JWT token
+      const payload = { id: user._id, role: user.role };
+      const token = JWT.sign(payload, secret_key, { expiresIn: "1h" });
+
+      return res.json({ token });
     } catch (error) {
       console.log("User login failed!");
     }
