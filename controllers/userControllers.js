@@ -102,6 +102,32 @@ export default {
       return res
         .status(200)
         .json({ status: "Success", message: "User Deleted", user });
-    } catch (error) {}
+    } catch (error) {
+      res.json({ message: "error while deleting user" });
+    }
+  },
+
+  updateUsers: async (req, res) => {
+    try {
+      const { name, email, phone, role } = req.body; // Extract updatable fields
+      const user = await User.findById(req.user.id); // Find the user by the token ID
+      console.log("not working", req.user);
+      if (!user) return res.status(404).send("User not found");
+
+      user.name = name || user.name;
+      user.email = email || user.email;
+      user.phone = phone || user.phone;
+      user.role = role || user.role;
+
+      // Save the updated user
+      await user.save();
+
+      res.status(200).send("User updated successfully");
+    } catch (error) {
+      console.error("Error details:", error);
+      res
+        .status(500)
+        .json({ message: "Error on updating user", error: error.message });
+    }
   },
 };

@@ -7,6 +7,17 @@ userRoute.post("/register", userControllers.registerUser);
 userRoute.post("/login", userControllers.userLogin);
 userRoute.get("/users", verifyToken, isAdmin, userControllers.getUsers);
 userRoute.get("/user/:id", verifyToken, isAdmin, userControllers.getUserById);
-userRoute.delete("/user/:id", verifyToken, isAdmin, userControllers.deleteUserById);
+userRoute.delete(
+  "/user/:id",
+  verifyToken,
+  isAdmin,
+  userControllers.deleteUserById
+);
+userRoute.put(
+  "/user/update",
+  verifyToken,
+  isAdmin,
+  userControllers.updateUsers
+);
 
 export default userRoute;
