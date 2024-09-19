@@ -5,7 +5,7 @@ import bcryptjs from "bcryptjs";
 
 export default {
   getUsers: async (req, res) => {
-    const users = await User.find({ });
+    const users = await User.find({});
     return res.json({
       status: "Success",
       message: "Welcome to the new world",
@@ -41,9 +41,7 @@ export default {
 
       // Create payload and generate token for JWT
       const payload = { id: user._id, role: user.role };
-      const token = JWT.sign(payload, process.env.SECRET_KEY, {
-        expiresIn: "1h",
-      });
+      const token = JWT.sign(payload, process.env.SECRET_KEY);
 
       return res.status(201).json({
         status: "Success",
@@ -62,9 +60,11 @@ export default {
     try {
       // Find the user by email
       const user = await User.findOne({ email });
+      console.log("User not found");
       if (!user)
         return res.status(400).json({ message: "User does not exists!" });
 
+      console.log("Stored Password:", user.password);
       // compare or match the password of user
       const isMatch = await bcryptjs.compare(password, user.password);
 
