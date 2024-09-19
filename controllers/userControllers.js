@@ -7,10 +7,6 @@ export default {
   registerUser: async (req, res) => {
     const { name, phone, email, password, role } = req.body;
 
-    // Generate token
-    // const payload = { name, email };
-    // const token = await JWT.sign(payload, process.env.SECRET_KEY);
-
     try {
       const user = new User({
         name,
@@ -95,5 +91,17 @@ export default {
     } catch (error) {
       res.json({ message: "error getting user by id" });
     }
+  },
+
+  deleteUserById: async (req, res) => {
+    const uid = req.params.id;
+    try {
+      const user = await User.findByIdAndDelete({ _id: uid });
+      if (!user) return res.status(404).json({ message: "User not found!" });
+
+      return res
+        .status(200)
+        .json({ status: "Success", message: "User Deleted", user });
+    } catch (error) {}
   },
 };
