@@ -21,14 +21,11 @@ export default {
     // const token = await JWT.sign(payload, process.env.SECRET_KEY);
 
     try {
-      const salt = await bcryptjs.genSalt(10);
-      const hashedPassword = await bcryptjs.hash(password, salt);
-
       const user = new User({
         name,
         phone,
         email,
-        password: hashedPassword,
+        password,
         role,
       });
 
@@ -60,7 +57,7 @@ export default {
     try {
       // Find the user by email
       const user = await User.findOne({ email });
-      console.log("User not found");
+
       if (!user)
         return res.status(400).json({ message: "User does not exists!" });
 
