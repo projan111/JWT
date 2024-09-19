@@ -24,7 +24,9 @@ app.use("/api/v1", userRoute);
 
 //Unexpected error handling middleware
 app.use((err, req, res, next) => {
-  return res.status(501).json({ message: "Internal Server Error" });
+  return res
+    .status(501)
+    .json({ message: "Internal Server Error | Unexpected Error!!!" });
 });
 
 app.listen(PORT, () => {

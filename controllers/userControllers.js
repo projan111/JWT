@@ -4,15 +4,6 @@ import JWT from "jsonwebtoken";
 import bcryptjs from "bcryptjs";
 
 export default {
-  getUsers: async (req, res) => {
-    const users = await User.find({});
-    return res.json({
-      status: "Success",
-      message: "Welcome to the new world",
-      data: users,
-    });
-  },
-
   registerUser: async (req, res) => {
     const { name, phone, email, password, role } = req.body;
 
@@ -79,6 +70,30 @@ export default {
       return res.json({ token });
     } catch (error) {
       console.log("User login failed!");
+    }
+  },
+
+  getUsers: async (req, res) => {
+    const users = await User.find({});
+    return res.json({
+      status: "Success",
+      message: "Welcome to the new world",
+      data: users,
+    });
+  },
+
+  getUserById: async (req, res) => {
+    const uid = req.params.id;
+    try {
+      const user = await User.findById({ _id: uid });
+      if (!user)
+        return res.status(404).json({ message: "User does not exists" });
+
+      return res
+        .status(200)
+        .json({ status: "Success", message: "User found", user });
+    } catch (error) {
+      res.json({ message: "error getting user by id" });
     }
   },
 };
