@@ -112,17 +112,13 @@ export default {
     const { name, email, phone, role } = req.body; // Extract updatable fields
 
     try {
-      const user = await User.findOne({ _id: uid }); // Find the user by the token ID
+      const user = await User.findByIdAndUpdate(
+        uid,
+        { name, email, phone, role },
+        { new: true }
+      ); // Find the user by ID and update
 
       if (!user) return res.status(404).send("User not found");
-
-      user.name = name;
-      user.email = email;
-      user.phone = phone;
-      user.role = role;
-
-      // Save the updated user
-      await user.save();
 
       res.status(200).json({ message: "User updated successfully", user });
     } catch (error) {
