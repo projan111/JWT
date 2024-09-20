@@ -108,21 +108,23 @@ export default {
   },
 
   updateUsers: async (req, res) => {
+    const uid = req.params.uid;
+    const { name, email, phone, role } = req.body; // Extract updatable fields
+
     try {
-      const { name, email, phone, role } = req.body; // Extract updatable fields
-      const user = await User.findById(req.user.id); // Find the user by the token ID
-      console.log("not working", req.user);
+      const user = await User.findOne({ _id: uid }); // Find the user by the token ID
+
       if (!user) return res.status(404).send("User not found");
 
-      user.name = name || user.name;
-      user.email = email || user.email;
-      user.phone = phone || user.phone;
-      user.role = role || user.role;
+      user.name = name;
+      user.email = email;
+      user.phone = phone;
+      user.role = role;
 
       // Save the updated user
       await user.save();
 
-      res.status(200).send("User updated successfully");
+      res.status(200).json({ message: "User updated successfully", user });
     } catch (error) {
       console.error("Error details:", error);
       res

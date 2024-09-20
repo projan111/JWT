@@ -14,7 +14,7 @@ userRoute.delete(
   userControllers.deleteUserById
 );
 userRoute.put(
-  "/user/update",
+  "/user/:uid",
   verifyToken,
   isAdmin,
   userControllers.updateUsers
