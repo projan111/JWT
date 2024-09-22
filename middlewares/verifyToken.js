@@ -18,7 +18,9 @@ export const verifyToken = (req, res, next) => {
 
 export const isAdmin = (req, res, next) => {
   if (req.userRole !== "admin") {
-    return res.status(403).json({ message: "Requires admin role" });
+    return res
+      .status(403)
+      .json({ status: "Access Denied!!!", message: "Requires admin role" });
   }
   next();
 };
