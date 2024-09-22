@@ -7,4 +7,5 @@ const refreshToken = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-export const RefreshToken = mongoose.model("RefreshToken", refreshToken);
+const RefreshToken = mongoose.model("RefreshToken", refreshToken);
+export default RefreshToken;

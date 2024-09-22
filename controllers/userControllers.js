@@ -2,6 +2,7 @@ import express from "express";
 import User from "../models/userModel.js";
 import JWT from "jsonwebtoken";
 import bcryptjs from "bcryptjs";
+import RefreshToken from "../models/refreshTokenModel.js";
 
 export default {
   registerUser: async (req, res) => {
@@ -65,6 +66,13 @@ export default {
       });
       // Generate refresh token (long-lived)
       const refreshToken = JWT.sign(payload, process.env.REFRESH_TOKEN_SECRET);
+
+      // Save the refresh token in the database
+      await RefreshToken.create({
+        token: refreshToken,
+        userId: user.id,
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Expire in 7 days
+      });
 
       return res.json({ token, refreshToken });
     } catch (error) {
@@ -156,8 +164,7 @@ export default {
   },
 
   logOut: async (req, res) => {
-
     const refreshToken = req.body.token;
-    refreshToken= refreshToken
-  }
+    refreshToken = refreshToken;
+  },
 };
