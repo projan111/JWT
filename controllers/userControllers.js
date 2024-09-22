@@ -25,7 +25,7 @@ export default {
 
       // Create payload and generate token for JWT
       const payload = { id: user._id, role: user.role };
-      const token = JWT.sign(payload, process.env.SECRET_KEY);
+      const token = JWT.sign(payload, process.env.ACCESS_TOKEN_SECRET);
 
       return res.status(201).json({
         status: "Success",
@@ -57,13 +57,16 @@ export default {
           message: "Invalid username or password",
         });
 
-      // Generate JWT token if login is successful
+      // Payload with user data
       const payload = { id: user._id, role: user.role };
-      const token = JWT.sign(payload, process.env.SECRET_KEY, {
+      // Generate access token (short-lived)
+      const token = JWT.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "1h",
       });
+      // Generate refresh token (long-lived)
+      const refreshToken = JWT.sign(payload, process.env.REFRESH_TOKEN_SECRET);
 
-      return res.json({ token });
+      return res.json({ token, refreshToken });
     } catch (error) {
       console.log("User login failed!");
     }
@@ -128,4 +131,33 @@ export default {
         .json({ message: "Error on updating user", error: error.message });
     }
   },
+
+  createNewRefreshToken: async (req, res) => {
+    const refreshToken = req.body.token;
+
+    if (!refreshToken)
+      return res.status(401).json({ message: "No token provided!" });
+
+    // Verify refresh Token
+    JWT.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+      if (err)
+        return res.status(403).json({ message: "Invalid Refresh Token" });
+
+      // Payload with user data
+      const payload = { id: user._id, role: user.role };
+
+      // Generate a new access token
+      const accessToken = JWT.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
+      });
+
+      res.json({ accessToken });
+    });
+  },
+
+  logOut: async (req, res) => {
+
+    const refreshToken = req.body.token;
+    refreshToken= refreshToken
+  }
 };

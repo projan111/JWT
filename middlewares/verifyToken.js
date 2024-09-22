@@ -6,7 +6,7 @@ export const verifyToken = (req, res, next) => {
 
   if (!token) return res.status(403).json({ message: "No token provided" });
 
-  JWT.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+  JWT.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err)
       return res.status(500).json({ message: "Failed to authenticate token" });
 

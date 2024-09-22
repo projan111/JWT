@@ -13,11 +13,8 @@ userRoute.delete(
   isAdmin,
   userControllers.deleteUserById
 );
-userRoute.put(
-  "/user/:uid",
-  verifyToken,
-  isAdmin,
-  userControllers.updateUsers
-);
+userRoute.put("/user/:uid", verifyToken, isAdmin, userControllers.updateUsers);
+
+userRoute.post("/token", userControllers.createNewRefreshToken);
 
 export default userRoute;
