@@ -18,4 +18,7 @@ userRoute.put("/user/:uid", verifyToken, isAdmin, userControllers.updateUsers);
 userRoute.post("/token", verifyToken, userControllers.createNewRefreshToken);
 userRoute.post("/logout", verifyToken, userControllers.logOut);
 
+userRoute.post('/verift-email', userControllers.verifyEmail)
+
+
 export default userRoute;

@@ -1,14 +1,19 @@
-import express from "express";
 import User from "../models/userModel.js";
 import JWT from "jsonwebtoken";
 import bcryptjs from "bcryptjs";
 import RefreshToken from "../models/refreshTokenModel.js";
+import nodemailer from "nodemailer";
 
 export default {
   registerUser: async (req, res) => {
     const { name, phone, email, password, role } = req.body;
 
     try {
+      const existingUser = await User.findOne({ email });
+      if (existingUser)
+        return res.status(400).json({ message: "User already exists!" });
+
+      // Create new user
       const user = new User({
         name,
         phone,
@@ -26,11 +31,33 @@ export default {
 
       // Create payload and generate token for JWT
       const payload = { id: user._id, role: user.role };
-      const token = JWT.sign(payload, process.env.ACCESS_TOKEN_SECRET);
+      const token = JWT.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1d",
+      });
+
+      // Send verification email
+      const transporter = nodemailer.createTransport({
+        host: "smtp.ethereal.email",
+        port: 587,
+        secure: false, // true for port 465, false for other ports
+        auth: {
+          user: "maddison53@ethereal.email",
+          pass: "jn7jnAPss4f63QBp6D",
+        },
+      });
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: newUser.email,
+        subject: "Verify your email",
+        html: `<h2>Welcome!</h2><p>Click <a href="http://localhost:5000/api/v1/verify-email/${token}">here</a> to verify your email.</p>`,
+      };
+
+      transporter.sendMail(mailOptions);
 
       return res.status(201).json({
         status: "Success",
-        message: "User registered successfully!",
+        message: "User registered. Please verify your email.",
         data: user,
         token,
       });
@@ -221,6 +248,27 @@ export default {
     } catch (error) {
       console.error("Logout Error:", error);
       res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
+  verifyEmail: async (req, res) => {
+    const { token } = req.params;
+    try {
+      const decoded = JWT.verify(token, process.env.ACCESS_TOKEN_SECRET);
+      const user = await User.findById(decoded.id);
+
+      if (!user) {
+        return res
+          .status(400)
+          .json({ message: "Invalid token or user doesn't exist" });
+      }
+      user.isVerified = true;
+      await user.save();
+
+      res.status(200).json({ message: "Email verified successfully" });
+    } catch (error) {
+      console.error("Email verification failed", error);
+      res.status(400).json({ message: "Invalid or expired token" });
     }
   },
 };
