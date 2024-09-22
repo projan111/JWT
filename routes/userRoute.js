@@ -16,5 +16,6 @@ userRoute.delete(
 userRoute.put("/user/:uid", verifyToken, isAdmin, userControllers.updateUsers);
 
 userRoute.post("/token", userControllers.createNewRefreshToken);
+userRoute.post("/logout", userControllers.logOut);
 
 export default userRoute;

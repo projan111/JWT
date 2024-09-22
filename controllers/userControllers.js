@@ -65,12 +65,22 @@ export default {
         expiresIn: "15m",
       });
       // Generate refresh token (long-lived)
-      const refreshToken = JWT.sign(payload, process.env.REFRESH_TOKEN_SECRET);
+      const refreshToken = JWT.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
+        expiresIn: "7d",
+      });
+
+      // Send the refreshToken to the HTTP-Only Cookie
+      //res.cookie("refreshToken", refreshToken, {
+      //httpOnly: true, // Prevents JavaScript access to the cookie
+      //secure: true, // Ensures the cookie is sent only over HTTPS
+      //sameSite: "strict", // Helps prevent CSRF
+      //maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expires in 7 days
+      //});
 
       // Save the refresh token in the database
       await RefreshToken.create({
         token: refreshToken,
-        userId: user.id,
+        userId: user._id,
         expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Expire in 7 days
       });
 
@@ -147,25 +157,63 @@ export default {
     if (!refreshToken)
       return res.status(401).json({ message: "No token provided!" });
 
-    // Verify refresh Token
-    JWT.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-      if (err)
-        return res.status(403).json({ message: "Invalid Refresh Token" });
+    try {
+      // Check if the refresh token exists in the database
+      const storedToken = await RefreshToken.findOne({ token: refreshToken });
+      if (!storedToken)
+        return res
+          .status(403)
+          .json({ message: "Refresh token not found or invalid" });
 
-      // Payload with user data
-      const payload = { id: user._id, role: user.role };
+      // Verify if the refresh token has expired
+      if (new Date(storedToken.expires) < new Date()) {
+        return res
+          .status(403)
+          .json({ message: "Refresh token has expired!!!" });
+      }
 
-      // Generate a new access token
-      const accessToken = JWT.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "1h",
-      });
+      // Verify new refresh Token
+      JWT.verify(
+        refreshToken,
+        process.env.REFRESH_TOKEN_SECRET,
+        (err, user) => {
+          if (err)
+            return res.status(403).json({ message: "Invalid Refresh Token" });
 
-      res.json({ accessToken });
-    });
+          // Payload with user data
+          const payload = { id: user._id, role: user.role };
+
+          // Generate a new access token
+          const newAccessToken = JWT.sign(
+            payload,
+            process.env.ACCESS_TOKEN_SECRET,
+            {
+              expiresIn: "15m",
+            }
+          );
+
+          res.json({ accessToken: newAccessToken });
+        }
+      );
+    } catch (error) {
+      console.error("Token Error:", error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
   },
 
   logOut: async (req, res) => {
     const refreshToken = req.body.token;
-    refreshToken = refreshToken;
+    if (!refreshToken)
+      return res.status(403).json({ message: "No token provided" });
+
+    try {
+      // Remove the refresh token from the database
+      await RefreshToken.findOneAndDelete({ token: refreshToken });
+
+      res.status(204).json({ message: "Token Deleted while loggin out!" });
+    } catch (error) {
+      console.error("Logout Error:", error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
   },
 };
