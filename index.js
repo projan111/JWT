@@ -24,8 +24,9 @@ app.use("/api/v1", userRoute);
 
 //Unexpected error handling middleware
 app.use((err, req, res, next) => {
+  console.error(err);
   return res
-    .status(501)
+    .status(500)
     .json({ message: "Internal Server Error | Unexpected Error!!!" });
 });
 
