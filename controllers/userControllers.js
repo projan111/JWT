@@ -49,7 +49,7 @@ export default {
       if (!user)
         return res.status(400).json({ message: "User does not exists!" });
 
-      console.log("Stored Password:", user.password);
+      // console.log("Stored Password:", user.password);
       // compare or match the password of user
       const isMatch = await bcryptjs.compare(password, user.password);
 
@@ -62,7 +62,7 @@ export default {
       const payload = { id: user._id, role: user.role };
       // Generate access token (short-lived)
       const token = JWT.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "1h",
+        expiresIn: "15m",
       });
       // Generate refresh token (long-lived)
       const refreshToken = JWT.sign(payload, process.env.REFRESH_TOKEN_SECRET);
@@ -76,7 +76,8 @@ export default {
 
       return res.json({ token, refreshToken });
     } catch (error) {
-      console.log("User login failed!");
+      console.error("User login failed!", error); // Log the actual error
+      return res.status(500).json({ message: "Internal Server Error" });
     }
   },
 
