@@ -208,9 +208,16 @@ export default {
 
     try {
       // Remove the refresh token from the database
-      await RefreshToken.findOneAndDelete({ token: refreshToken });
+      const result = await RefreshToken.findOneAndDelete({
+        token: refreshToken,
+      });
 
-      res.status(204).json({ message: "Token Deleted while loggin out!" });
+      // If the token wasn't found in the database
+      if (!result) {
+        return res.status(404).json({ message: "Refresh token not found" });
+      }
+
+      res.status(201).json({ message: "Token Deleted while loggin out!" });
     } catch (error) {
       console.error("Logout Error:", error);
       res.status(500).json({ message: "Internal Server Error" });
