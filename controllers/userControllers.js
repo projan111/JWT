@@ -262,12 +262,80 @@ export default {
           .status(400)
           .json({ message: "Invalid token or user doesn't exist" });
       }
+
+      if (user.isVerified) {
+        return res.status(400).json({ message: "User already verified" });
+      }
+
       user.isVerified = true;
       await user.save();
 
       res.status(200).json({ message: "Email verified successfully" });
     } catch (error) {
       console.error("Email verification failed", error);
+      res.status(400).json({ message: "Invalid or expired token" });
+    }
+  },
+
+  requestPasswordReset: async (req, res) => {
+    const { email } = req.body;
+
+    try {
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const payload = { id: user._id };
+      const token = JWT.sign(payload, process.env.RESET_PASSWORD_SECRET, {
+        expiresIn: "1h",
+      });
+
+      // Send Password reset email
+      const transporter = nodemailer.createTransport({
+        service: "Gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: user.email,
+        subject: "Password Reset",
+        html: `<p>Click <a href="${process.env.FRONTEND_URL}/reset-password/${token}">here</a> to reset your password.</p>`,
+      };
+
+      transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error("Error sending password reset email", error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
+
+  resetPassword: async (req, res) => {
+    const { token } = req.params;
+    const { newPassword } = req.body;
+
+    try {
+      const decoded = JWT.verify(token, process.env.RESET_PASSWORD_SECRET);
+      const user = await User.findById(decoded.id);
+      if (!user) {
+        return res
+          .status(404)
+          .json({ message: "Invalid token or user doesn't exist" });
+      }
+
+      // Hash the new password
+      const salt = await bcryptjs.genSalt(10);
+      user.password = await bcryptjs.hash(newPassword, salt);
+
+      await user.save();
+
+      res.status(200).json({ message: "Password reset successfully" });
+    } catch (error) {
+      console.error("Password reset failed", error);
       res.status(400).json({ message: "Invalid or expired token" });
     }
   },

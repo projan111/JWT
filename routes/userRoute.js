@@ -18,7 +18,9 @@ userRoute.put("/user/:uid", verifyToken, isAdmin, userControllers.updateUsers);
 userRoute.post("/token", verifyToken, userControllers.createNewRefreshToken);
 userRoute.post("/logout", verifyToken, userControllers.logOut);
 
-userRoute.post('/verift-email', userControllers.verifyEmail)
+userRoute.post("/request-password-reset", userControllers.requestPasswordReset);
+userRoute.post('/reset-password/:token', userControllers.resetPassword)
+userRoute.post('/verift-email/:token', userControllers.verifyEmail)
 
 
 export default userRoute;
