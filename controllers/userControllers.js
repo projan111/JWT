@@ -30,6 +30,34 @@ export default {
 
       await user.save();
 
+      // Generate a verification tojen (JWT)
+      const token = JWT.sign(
+        { id: user._id },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "15m" }
+      );
+
+      // Send verification token using nodemailer
+      const transporter = nodemailer.createTransport({
+        host: "smtp.ethereal.email",
+        port: 587,
+        secure: false,
+        auth: {
+          user: "maya.buckridge70@ethereal.email", // Your email account
+          pass: "nE4pVnFPJ6efcCxzsw", // Your email password
+        },
+      });
+
+      const mailOptions = {
+        from: "smtp.ethereal.email",
+        to: user.email,
+        subject: "Verify your email",
+        html: `<h2>Welcome!</h2><p>Please verify your email by clicking <a href="http://localhost:5000/api/v1/verify-email/${token}">here</a>.</p>`,
+      };
+
+      // Send Email
+      await transporter.sendMail(mailOptions);
+
       return res.status(201).json({
         status: "Success",
         message: "User registered. Please verify your email.",
@@ -50,6 +78,13 @@ export default {
 
       if (!user)
         return res.status(400).json({ message: "User does not exists!" });
+
+      // Check if the user is verified
+      if (!user.isVerified) {
+        return res
+          .status(400)
+          .json({ message: "Please verify your email before logging in." });
+      }
 
       // console.log("Stored Password:", user.password);
       // compare or match the password of user
@@ -229,6 +264,7 @@ export default {
   verifyEmail: async (req, res) => {
     const { token } = req.params;
     try {
+      // Decode the token and get the user ID
       const decoded = JWT.verify(token, process.env.ACCESS_TOKEN_SECRET);
       const user = await User.findById(decoded.id);
 
@@ -242,6 +278,7 @@ export default {
         return res.status(400).json({ message: "User already verified" });
       }
 
+      // Mark the user as verified
       user.isVerified = true;
       await user.save();
 
