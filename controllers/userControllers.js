@@ -39,24 +39,27 @@ export default {
 
       // Send verification token using nodemailer
       const transporter = nodemailer.createTransport({
-        host: "smtp.ethereal.email",
-        port: 587,
-        secure: false,
+        service: "gmail",
         auth: {
-          user: "maya.buckridge70@ethereal.email", // Your email account
-          pass: "nE4pVnFPJ6efcCxzsw", // Your email password
+          user: process.env.EMAIL_USER, // Your email account
+          pass: process.env.EMAIL_PASS, // Your email app password
         },
       });
 
       const mailOptions = {
-        from: "smtp.ethereal.email",
+        from: process.env.EMAIL_USER,
         to: user.email,
         subject: "Verify your email",
         html: `<h2>Welcome!</h2><p>Please verify your email by clicking <a href="http://localhost:5000/api/v1/verify-email/${token}">here</a>.</p>`,
       };
 
       // Send Email
-      await transporter.sendMail(mailOptions);
+      try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log("Email sent to:", info);
+      } catch (error) {
+        console.error("Error while sending email", error);
+      }
 
       return res.status(201).json({
         status: "Success",
