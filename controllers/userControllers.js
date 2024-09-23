@@ -20,6 +20,7 @@ export default {
         email,
         password,
         role,
+        isVerified: false,
       });
 
       if (!user)
@@ -28,32 +29,6 @@ export default {
           .json({ status: "Failed", message: "User not found!!!" });
 
       await user.save();
-
-      // Create payload and generate token for JWT
-      const payload = { id: user._id, role: user.role };
-      const token = JWT.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "1d",
-      });
-
-      // Send verification email
-      const transporter = nodemailer.createTransport({
-        host: "smtp.ethereal.email",
-        port: 587,
-        secure: false, // true for port 465, false for other ports
-        auth: {
-          user: "maddison53@ethereal.email",
-          pass: "jn7jnAPss4f63QBp6D",
-        },
-      });
-
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: newUser.email,
-        subject: "Verify your email",
-        html: `<h2>Welcome!</h2><p>Click <a href="http://localhost:5000/api/v1/verify-email/${token}">here</a> to verify your email.</p>`,
-      };
-
-      transporter.sendMail(mailOptions);
 
       return res.status(201).json({
         status: "Success",
@@ -288,7 +263,7 @@ export default {
 
       const payload = { id: user._id };
       const token = JWT.sign(payload, process.env.RESET_PASSWORD_SECRET, {
-        expiresIn: "1h",
+        expiresIn: "15m",
       });
 
       // Send Password reset email
