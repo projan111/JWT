@@ -56,7 +56,7 @@ export default {
       // Send Email
       try {
         const info = await transporter.sendMail(mailOptions);
-        console.log("Email sent to:", info);
+        console.log("Email sent to:", info.accepted[0]);
       } catch (error) {
         console.error("Error while sending email", error);
       }
@@ -283,7 +283,12 @@ export default {
 
       // Mark the user as verified
       user.isVerified = true;
-      await user.save();
+      try {
+        const confirmEmailVerification = await user.save();
+        console.log(confirmEmailVerification);
+      } catch (error) {
+        console.error("Error while conforming token:", error);
+      }
 
       res.status(200).json({ message: "Email verified successfully" });
     } catch (error) {

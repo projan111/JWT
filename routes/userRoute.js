@@ -20,7 +20,7 @@ userRoute.post("/logout", verifyToken, userControllers.logOut);
 
 userRoute.post("/request-password-reset", userControllers.requestPasswordReset);
 userRoute.post('/reset-password/:token', userControllers.resetPassword)
-userRoute.post('/verift-email/:token', userControllers.verifyEmail)
+userRoute.post('/verify-email/:token', userControllers.verifyEmail)
 
 
 export default userRoute;
