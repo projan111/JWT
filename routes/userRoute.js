@@ -18,9 +18,10 @@ userRoute.put("/user/:uid", verifyToken, isAdmin, userControllers.updateUsers);
 userRoute.post("/token", verifyToken, userControllers.createNewRefreshToken);
 userRoute.post("/logout", verifyToken, userControllers.logOut);
 
-userRoute.post("/request-password-reset", userControllers.requestPasswordReset);
-userRoute.post('/reset-password/:token', userControllers.resetPassword)
 userRoute.post('/verify-email/:token', userControllers.verifyEmail)
+userRoute.post("/request-password-reset", userControllers.forgotPassword);
+userRoute.get('/reset-password', userControllers.resetPassword)
+userRoute.post('/reset-password', userControllers.handleResetPassword)
 
 
 export default userRoute;
