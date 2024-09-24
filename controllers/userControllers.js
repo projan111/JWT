@@ -297,7 +297,7 @@ export default {
     }
   },
 
-  forgotPassword: async (req, res) => {
+    forgotPassword: async (req, res) => {
     const { email } = req.body;
 
     try {

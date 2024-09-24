@@ -18,8 +18,8 @@ userRoute.put("/user/:uid", verifyToken, isAdmin, userControllers.updateUsers);
 userRoute.post("/token", verifyToken, userControllers.createNewRefreshToken);
 userRoute.post("/logout", verifyToken, userControllers.logOut);
 
-userRoute.post('/verify-email/:token', userControllers.verifyEmail)
-userRoute.post("/request-password-reset", userControllers.forgotPassword);
+userRoute.get('/verify-email/:token', userControllers.verifyEmail)
+userRoute.post("/forgot-password", userControllers.forgotPassword);
 userRoute.get('/reset-password', userControllers.resetPassword)
 userRoute.post('/reset-password', userControllers.handleResetPassword)
 
